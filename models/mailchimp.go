@@ -3,7 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
-	"github.com/byrnedo/tictail_to_mailchimp_forwarder/config"
+	"github.com/byrnedo/tictochimp/config"
 	"io/ioutil"
 	"net/http"
 )

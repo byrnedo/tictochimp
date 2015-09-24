@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/byrnedo/tictail_to_mailchimp_forwarder/config"
+	"github.com/byrnedo/tictochimp/config"
 	"testing"
 )
 
