@@ -5,6 +5,7 @@ import (
 	"github.com/jarcoal/httpmock"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"testing"
 )
 
@@ -47,11 +48,36 @@ func TestAddSubscriberToList(t *testing.T) {
 	httpmock.RegisterResponder("POST", MAILCHIMP_TEST_URL+"/3.0/lists/x1234/members",
 		func(req *http.Request) (*http.Response, error) {
 			if req.Header.Get("Authorization") == "apiKey "+MAILCHIMP_TEST_KEY {
-				subRequest := memberRequest{}
 				bodyBytes, _ := ioutil.ReadAll(req.Body)
-				if err := json.Unmarshal(bodyBytes, &subRequest); err != nil {
-					return httpmock.NewStringResponse(500, `{"error","Failed to unmarshal body"}`), nil
+				expectedData := map[string]interface{}{
+					"email_type":    "html",
+					"email_address": "donal@test.com",
+					"status":        "subscribed",
+					"status_if_new": "subscribed",
+					"merge_fields": map[string]interface{}{
+						"FNAME": "Donal",
+						"LNAME": "Test",
+					},
+					"language": "sv",
+					"vip":      false,
 				}
+
+				var receivedMap map[string]interface{}
+				if err := json.Unmarshal(bodyBytes, &receivedMap); err != nil {
+					return httpmock.NewStringResponse(500, `{"error","Failed to unmarshal body to bytes"}`), nil
+				}
+
+				if !reflect.DeepEqual(expectedData, receivedMap) {
+					t.Logf("Expected: %+v", expectedData)
+					t.Logf("Received: %+v", receivedMap)
+					return httpmock.NewStringResponse(400, `{"error","Unexpected format"}`), nil
+				}
+
+				subRequest := memberRequest{}
+				if err := json.Unmarshal(bodyBytes, &subRequest); err != nil {
+					return httpmock.NewStringResponse(500, `{"error","Failed to unmarshal body to struct"}`), nil
+				}
+
 				return httpmock.NewStringResponse(200, MOCK_POST_SUBSCRIBER_200_RESPONSE), nil
 			}
 			return httpmock.NewStringResponse(401, "{}"), nil
@@ -66,14 +92,14 @@ func TestAddSubscriberToList(t *testing.T) {
 	}
 	err := mc.AddSubscriber(sub, "x1234")
 	if err == nil {
-		t.Error(err.Error())
+		t.Error("Got no error adding subscriber with bad auth token")
 	}
 
 	mc = NewMailchimp(MAILCHIMP_TEST_URL, MAILCHIMP_TEST_KEY)
 
 	err = mc.AddSubscriber(sub, "x1234")
 	if err != nil {
-		t.Error(err.Error())
+		t.Error("Got error adding subscriber with valid auth token:" + err.Error())
 	}
 
 }
