@@ -9,7 +9,7 @@ import (
 type Config struct {
 	Tictail struct {
 		Url          string
-		ClientKey    string
+		ClientID     string
 		ClientSecret string
 		Product      string
 	}
@@ -52,8 +52,8 @@ func populateConfigVars(c *Config) {
 		c.Tictail.Url = val
 	}
 
-	if val, err := typesafeConf.GetString("tictail.client-key"); err != nil {
-		c.Tictail.ClientKey = val
+	if val, err := typesafeConf.GetString("tictail.client-id"); err != nil {
+		c.Tictail.ClientID = val
 	}
 
 	if val, err := typesafeConf.GetString("tictail.client-secret"); err != nil {
