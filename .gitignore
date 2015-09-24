@@ -3,7 +3,7 @@
 *.a
 *.so
 
-tictail_to_mailchimp_forwarder
+./tictochimp
 .local.conf
 .local.source
 
