@@ -5,12 +5,24 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	conf := config.Config{}
+	conf := Config{}
 
-	if err := conf.ParseFile("../.local.conf"); err != nil {
-		t.Error("Failed to read ../local.conf:" + err.Error())
+	t.Logf("Conf object before: %v", conf)
+
+	if err := conf.ParseFile("../test.conf"); err != nil {
+		t.Error("Failed to read ../test.conf:" + err.Error())
 	}
 
-	t.Logf("%v", conf)
+	if conf.Tictail.ClientID != "test" {
+		t.Error("Incorrect ClientID value")
+	}
+
+	t.Log(conf.Mailchimp.Url)
+
+	if conf.Mailchimp.Url != "https://us10.api.mailchimp.com" {
+		t.Error("Incorrect Url value")
+	}
+
+	t.Logf("Conf object after: %v", conf)
 
 }
