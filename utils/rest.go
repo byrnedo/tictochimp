@@ -9,15 +9,25 @@ import (
 )
 
 type RestClient struct {
-	client  *http.Client
-	Headers map[string]string
+	client       *http.Client
+	Headers      map[string]string
+	lastResponse *http.Response
 }
 
 func NewRestClient() *RestClient {
-	return &RestClient{&http.Client{}, nil}
+	return &RestClient{&http.Client{}, nil, nil}
 }
 
-func (c *RestClient) Get(url string, responseStruct interface{}) error {
+func (c *RestClient) ResponseBody() []byte {
+	data, _ := ioutil.ReadAll(c.lastResponse.Body)
+	return data
+}
+
+func (c *RestClient) ResponseStatus() string {
+	return c.lastResponse.Status
+}
+
+func (c *RestClient) Get(url string) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -30,24 +40,17 @@ func (c *RestClient) Get(url string, responseStruct interface{}) error {
 	}
 
 	response, err := c.client.Do(req)
+	c.lastResponse = response
 	if err != nil {
 		return err
 	}
 
 	defer response.Body.Close()
 
-	contents, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return err
-	}
-
-	if err = json.Unmarshal(contents, responseStruct); err != nil {
-		return err
-	}
 	return nil
 }
 
-func (c *RestClient) Post(url string, data interface{}, responseStruct interface{}) error {
+func (c *RestClient) Post(url string, data interface{}) error {
 
 	byteData, err := json.Marshal(data)
 	if err != nil {
@@ -66,19 +69,12 @@ func (c *RestClient) Post(url string, data interface{}, responseStruct interface
 	}
 
 	response, err := c.client.Do(req)
+	c.lastResponse = response
 	if err != nil {
 		return err
 	}
 
 	defer response.Body.Close()
 
-	contents, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return err
-	}
-
-	if err = json.Unmarshal(contents, responseStruct); err != nil {
-		return err
-	}
 	return nil
 }
