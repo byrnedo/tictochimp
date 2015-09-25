@@ -12,9 +12,10 @@ type Tictail struct {
 	client      *utils.RestClient
 }
 
-const TICTAIL_API_VERSION = "1.0"
+const TICTAIL_API_VERSION = "v1"
+const TICTAIL_API_URL = "https://api.tictail.com"
 
-func NewTictail(url string, accessToken string) *Tictail {
+func NewTictail(accessToken string) *Tictail {
 
 	client := utils.NewRestClient()
 
@@ -22,7 +23,7 @@ func NewTictail(url string, accessToken string) *Tictail {
 		"Authorization": "Bearer " + accessToken,
 	}
 	return &Tictail{
-		url + "/" + API_VERSION,
+		TICTAIL_API_URL + "/" + TICTAIL_API_VERSION,
 		accessToken,
 		client,
 	}
