@@ -46,14 +46,14 @@ func (m *Tictail) GetMe() (*tictailSpec.MeResponse, error) {
 
 	err = json.Unmarshal(m.client.ResponseBody(), &responseData)
 
-	return &responseData, nil
+	return &responseData, err
 }
 
-func (m *Tictail) GetAllOrders(storeID string) (*tictailSpec.OrdersResponse, error) {
+func (m *Tictail) GetAllOrders(storeID string) ([]tictailSpec.OrdersResponse, error) {
 
-	responseData := tictailSpec.OrdersResponse{}
+	responseData := []tictailSpec.OrdersResponse{}
 
-	err := m.client.Get(m.url + "/" + storeID + "/orders")
+	err := m.client.Get(m.url + "/store/" + storeID + "/orders")
 	if err != nil {
 		return nil, errors.New("Failed to do GET request: " + err.Error())
 	}
@@ -65,5 +65,5 @@ func (m *Tictail) GetAllOrders(storeID string) (*tictailSpec.OrdersResponse, err
 
 	err = json.Unmarshal(m.client.ResponseBody(), &responseData)
 
-	return &responseData, nil
+	return responseData, err
 }

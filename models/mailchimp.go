@@ -53,7 +53,7 @@ func (m *Mailchimp) GetLists() ([]mailchimpSpec.List, error) {
 
 	err = json.Unmarshal(m.client.ResponseBody(), &responseData)
 
-	return responseData.Lists, nil
+	return responseData.Lists, err
 }
 
 func newMemeberRequest(subscriber Subscriber) *mailchimpSpec.MemberRequest {

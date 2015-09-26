@@ -2,6 +2,8 @@ package models
 
 const (
 	TICTAIL_MOCK_GET_ME_200_RESPONSE = `{
+	"email": "test@testuser.com",
+	"stores": [{
   "currency": "SEK",
   "id": "3MpE",
   "dashboard_url": "https://tictail.com/dashboard/store/testuser",
@@ -13,7 +15,7 @@ const (
   "short_description": "",
   "subdomain": "testuser",
   "launched_at": "2015-08-19T08:53:41.000000",
-  "vat": 
+  "vat": {
     "applied_to_shipping": false,
     "rate": "0.060000",
     "region": "SE",
@@ -37,7 +39,7 @@ const (
     }
   },
   "description": "",
- "contact_email": "test@testuser.com,
+ "contact_email": "test@testuser.com",
   "name": "Test Store",
   "language": "sv",
   "url": "http://testuser.tictail.com",
@@ -46,7 +48,7 @@ const (
   "modified_at": null,
   "appstore_currency": "USD",
   "sandbox": false
-}`
+}]}`
 	TICTAIL_MOCK_GET_PRODUCTS_200_RESPONSE = `[{
     "status": "published",
     "store_url": "http://testuser.tictail.com",
@@ -180,7 +182,7 @@ const (
         "product": {
           "status": "published",
           "store_url": null,
-          "description": ""
+          "description": "",
           "store_name": null,
           "store_id": "3MpE",
           "unlimited": true,
