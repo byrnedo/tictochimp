@@ -10,15 +10,13 @@ import (
 
 type Config struct {
 	Tictail struct {
-		Url          string
-		ClientID     string
-		ClientSecret string
-		Product      string
+		AccessToken string
+		ProductName string
+		StoreName   string
 	}
 	Mailchimp struct {
-		Url         string
 		AccessToken string
-		List        string
+		ListName    string
 	}
 	underlyingData *parse.Tree
 }
@@ -47,32 +45,34 @@ func populateConfigVars(c *Config) {
 
 	setDefaultValues(c)
 
-	if val, err := typesafeConf.GetString("tictail.url"); err == nil {
-		c.Tictail.Url = unquoteString(val)
+	/*
+	 *    if val, err := typesafeConf.GetString("tictail.client-id"); err == nil {
+	 *        c.Tictail.ClientID = unquoteString(val)
+	 *    }
+	 *
+	 *    if val, err := typesafeConf.GetString("tictail.client-secret"); err == nil {
+	 *        c.Tictail.ClientSecret = unquoteString(val)
+	 *    }
+	 */
+
+	if val, err := typesafeConf.GetString("tictail.access-token"); err == nil {
+		c.Tictail.AccessToken = unquoteString(val)
 	}
 
-	if val, err := typesafeConf.GetString("tictail.client-id"); err == nil {
-		c.Tictail.ClientID = unquoteString(val)
+	if val, err := typesafeConf.GetString("tictail.store-name"); err == nil {
+		c.Tictail.StoreName = unquoteString(val)
 	}
 
-	if val, err := typesafeConf.GetString("tictail.client-secret"); err == nil {
-		c.Tictail.ClientSecret = unquoteString(val)
-	}
-
-	if val, err := typesafeConf.GetString("tictail.product"); err == nil {
-		c.Tictail.Product = unquoteString(val)
-	}
-
-	if val, err := typesafeConf.GetString("mailchimp.url"); err == nil {
-		c.Mailchimp.Url = unquoteString(val)
+	if val, err := typesafeConf.GetString("tictail.product-name"); err == nil {
+		c.Tictail.ProductName = unquoteString(val)
 	}
 
 	if val, err := typesafeConf.GetString("mailchimp.access-token"); err == nil {
 		c.Mailchimp.AccessToken = unquoteString(val)
 	}
 
-	if val, err := typesafeConf.GetString("mailchimp.list"); err == nil {
-		c.Mailchimp.List = unquoteString(val)
+	if val, err := typesafeConf.GetString("mailchimp.list-name"); err == nil {
+		c.Mailchimp.ListName = unquoteString(val)
 	}
 }
 
@@ -86,8 +86,6 @@ func unquoteString(value string) string {
 }
 
 func setDefaultValues(c *Config) {
-	c.Tictail.Url = "https://tictail.com"
-	c.Mailchimp.Url = "https://us10.api.mailchimp.com/3.0"
 }
 
 func (c *Config) GetUnderlyingData() (data *parse.Tree) {

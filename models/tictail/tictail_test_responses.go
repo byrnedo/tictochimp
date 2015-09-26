@@ -3,7 +3,6 @@ package tictail
 const (
 	TICTAIL_MOCK_GET_ME_200_RESPONSE = `{
 	"email": "test@testuser.com",
-	"stores": [{
   "currency": "SEK",
   "id": "3MpE",
   "dashboard_url": "https://tictail.com/dashboard/store/testuser",
@@ -48,7 +47,7 @@ const (
   "modified_at": null,
   "appstore_currency": "USD",
   "sandbox": false
-}]}`
+}`
 	TICTAIL_MOCK_GET_PRODUCTS_200_RESPONSE = `[{
     "status": "published",
     "store_url": "http://testuser.tictail.com",

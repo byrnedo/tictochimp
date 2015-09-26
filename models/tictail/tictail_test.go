@@ -60,7 +60,7 @@ func TestGetOrders(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", TICTAIL_TEST_URL+"/v1/store/x1234/orders",
+	httpmock.RegisterResponder("GET", TICTAIL_TEST_URL+"/v1/stores/x1234/orders",
 		func(req *http.Request) (*http.Response, error) {
 			if req.Header.Get("Authorization") == "Bearer "+TICTAIL_TEST_KEY {
 				return httpmock.NewStringResponse(200, TICTAIL_MOCK_GET_ORDERS_200_RESPONSE), nil

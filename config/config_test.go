@@ -9,11 +9,11 @@ func TestParse(t *testing.T) {
 
 	t.Logf("Conf object before: %v", conf)
 
-	if err := conf.ParseFile("../test.conf"); err != nil {
+	if err := conf.ParseFile("./test.conf"); err != nil {
 		t.Error("Failed to read ../test.conf:" + err.Error())
 	}
 
-	if conf.Tictail.ClientID != "test" {
+	if conf.Tictail.AccessToken != "test" {
 		t.Error("Incorrect ClientID value")
 	}
 

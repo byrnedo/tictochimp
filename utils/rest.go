@@ -9,22 +9,22 @@ import (
 )
 
 type RestClient struct {
-	client       *http.Client
-	Headers      map[string]string
-	lastResponse *http.Response
+	client           *http.Client
+	Headers          map[string]string
+	lastResponse     http.Response
+	lastResponseBody []byte
 }
 
 func NewRestClient() *RestClient {
-	return &RestClient{&http.Client{}, nil, nil}
+	return &RestClient{&http.Client{}, nil, http.Response{}, nil}
 }
 
 func (c *RestClient) ResponseBody() []byte {
-	data, _ := ioutil.ReadAll(c.lastResponse.Body)
-	return data
+	return c.lastResponseBody
 }
 
-func (c *RestClient) ResponseStatus() string {
-	return c.lastResponse.Status
+func (c *RestClient) ResponseStatus() int {
+	return c.lastResponse.StatusCode
 }
 
 func (c *RestClient) Get(url string) error {
@@ -40,10 +40,11 @@ func (c *RestClient) Get(url string) error {
 	}
 
 	response, err := c.client.Do(req)
-	c.lastResponse = response
 	if err != nil {
 		return err
 	}
+	c.lastResponse = *response
+	c.lastResponseBody, _ = ioutil.ReadAll(response.Body)
 
 	defer response.Body.Close()
 
@@ -69,10 +70,11 @@ func (c *RestClient) Post(url string, data interface{}) error {
 	}
 
 	response, err := c.client.Do(req)
-	c.lastResponse = response
 	if err != nil {
 		return err
 	}
+	c.lastResponse = *response
+	c.lastResponseBody, _ = ioutil.ReadAll(response.Body)
 
 	defer response.Body.Close()
 

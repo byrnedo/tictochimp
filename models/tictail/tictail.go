@@ -40,8 +40,8 @@ func (m *Tictail) GetMe() (*spec.MeResponse, error) {
 	}
 
 	status := m.client.ResponseStatus()
-	if status != "200" && status != "201" {
-		return nil, errors.New("Got non-success status code: " + status)
+	if status != 200 && status != 201 {
+		return nil, errors.New("Got non-success status code: " + string(status))
 	}
 
 	err = json.Unmarshal(m.client.ResponseBody(), &responseData)
@@ -53,14 +53,14 @@ func (m *Tictail) GetAllOrders(storeID string) ([]spec.OrdersResponse, error) {
 
 	responseData := []spec.OrdersResponse{}
 
-	err := m.client.Get(m.url + "/store/" + storeID + "/orders")
+	err := m.client.Get(m.url + "/stores/" + storeID + "/orders")
 	if err != nil {
 		return nil, errors.New("Failed to do GET request: " + err.Error())
 	}
 
 	status := m.client.ResponseStatus()
-	if status != "200" && status != "201" {
-		return nil, errors.New("Got non-success status code: " + status)
+	if status != 200 && status != 201 {
+		return nil, errors.New("Got non-success status code: " + string(status))
 	}
 
 	err = json.Unmarshal(m.client.ResponseBody(), &responseData)

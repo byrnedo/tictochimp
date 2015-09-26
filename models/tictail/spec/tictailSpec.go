@@ -27,19 +27,16 @@ func (ct *TictailTime) MarshalJSON() ([]byte, error) {
 	return []byte(ct.Time.Format(ctLayout)), nil
 }
 
-type MeStoreResponse struct {
+type MeResponse struct {
+	Email     string
 	ID        string
 	Subdomain string
-}
-
-type MeResponse struct {
-	Email  string
-	Stores []MeStoreResponse
 }
 
 type OrdersResponse struct {
 	Customer    *OrdersCustomerResponse
 	Transaction *OrdersTransactionResponse
+	Items       []OrderItemResponse
 }
 
 type OrdersCustomerResponse struct {
