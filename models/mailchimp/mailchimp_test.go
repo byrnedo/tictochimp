@@ -1,8 +1,8 @@
-package models
+package mailchimp
 
 import (
 	"encoding/json"
-	"github.com/byrnedo/tictochimp/models/mailchimpSpec"
+	"github.com/byrnedo/tictochimp/models/mailchimp/spec"
 	"github.com/jarcoal/httpmock"
 	"io/ioutil"
 	"net/http"
@@ -74,7 +74,7 @@ func TestAddSubscriberToList(t *testing.T) {
 					return httpmock.NewStringResponse(400, `{"error","Unexpected format"}`), nil
 				}
 
-				subRequest := mailchimpSpec.MemberRequest{}
+				subRequest := spec.MemberRequest{}
 				if err := json.Unmarshal(bodyBytes, &subRequest); err != nil {
 					return httpmock.NewStringResponse(500, `{"error","Failed to unmarshal body to struct"}`), nil
 				}

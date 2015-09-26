@@ -1,4 +1,4 @@
-package models
+package mailchimp
 
 const MAILCHIMP_MOCK_POST_SUBSCRIBER_200_RESPONSE = `{"status": "success"}`
 

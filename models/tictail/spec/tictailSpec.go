@@ -1,4 +1,4 @@
-package tictailSpec
+package spec
 
 import (
 	"time"

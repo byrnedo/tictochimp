@@ -1,4 +1,4 @@
-package mailchimpSpec
+package spec
 
 type List struct {
 	Id   string

@@ -1,8 +1,9 @@
-package models
+package tictail
 
 import (
 	"encoding/json"
-	"github.com/byrnedo/tictochimp/models/tictailSpec"
+	"fmt"
+	"github.com/byrnedo/tictochimp/models/tictail/spec"
 	"github.com/jarcoal/httpmock"
 	"net/http"
 	"reflect"
@@ -27,31 +28,30 @@ func TestGetMe(t *testing.T) {
 			return httpmock.NewStringResponse(401, "{}"), nil
 		},
 	)
-
-	tt := NewTictail(TICTAIL_TEST_KEY)
+	tt := NewTictail("WRONGKEY")
 
 	response, err := tt.GetMe()
-	if err != nil {
-		t.Error(err.Error())
-	}
-
-	t.Logf("response: %#v", response)
-
-	tt = NewTictail("WRONGKEY")
-
-	response, err = tt.GetMe()
 	if err == nil {
 		t.Error(err.Error())
 	}
 
-	var expectedData tictailSpec.MeResponse
-	err = json.Unmarshal([]byte(TICTAIL_MOCK_GET_ME_200_RESPONSE), &expectedData)
+	tt = NewTictail(TICTAIL_TEST_KEY)
+
+	response, err = tt.GetMe()
+	if err != nil {
+		t.Error(err.Error())
+	} else if response == nil {
+		t.Error("Nil response")
+	}
+
+	expectedData := &spec.MeResponse{}
+	err = json.Unmarshal([]byte(TICTAIL_MOCK_GET_ME_200_RESPONSE), expectedData)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	if !reflect.DeepEqual(expectedData, response) {
-		t.Error("Response and mock data didn't match")
+	if fmt.Sprintf("%#v", response) != fmt.Sprintf("%#v", expectedData) {
+		t.Error("Response and expected data don't match")
 	}
 }
 
@@ -77,7 +77,7 @@ func TestGetOrders(t *testing.T) {
 	}
 	t.Logf("response: %#v", response)
 
-	var expectedData []tictailSpec.OrdersResponse
+	var expectedData []spec.OrdersResponse
 	err = json.Unmarshal([]byte(TICTAIL_MOCK_GET_ORDERS_200_RESPONSE), &expectedData)
 	if err != nil {
 		t.Error(err.Error())

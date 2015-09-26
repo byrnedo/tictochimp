@@ -1,9 +1,9 @@
-package models
+package mailchimp
 
 import (
 	"encoding/json"
 	"errors"
-	"github.com/byrnedo/tictochimp/models/mailchimpSpec"
+	"github.com/byrnedo/tictochimp/models/mailchimp/spec"
 	"github.com/byrnedo/tictochimp/utils"
 )
 
@@ -35,10 +35,10 @@ func NewMailchimp(url string, apiKey string) *Mailchimp {
 	}
 }
 
-func (m *Mailchimp) GetLists() ([]mailchimpSpec.List, error) {
+func (m *Mailchimp) GetLists() ([]spec.List, error) {
 
 	responseData := struct {
-		Lists []mailchimpSpec.List
+		Lists []spec.List
 	}{}
 
 	err := m.client.Get(m.url + "/lists")
@@ -56,13 +56,13 @@ func (m *Mailchimp) GetLists() ([]mailchimpSpec.List, error) {
 	return responseData.Lists, err
 }
 
-func newMemeberRequest(subscriber Subscriber) *mailchimpSpec.MemberRequest {
-	return &mailchimpSpec.MemberRequest{
+func newMemeberRequest(subscriber Subscriber) *spec.MemberRequest {
+	return &spec.MemberRequest{
 		EmailType:    "html",
 		EmailAddress: subscriber.Email,
 		StatusIfNew:  "subscribed",
 		Status:       "subscribed",
-		MergeFields:  &mailchimpSpec.MergeFields{subscriber.FirstName, subscriber.LastName},
+		MergeFields:  &spec.MergeFields{subscriber.FirstName, subscriber.LastName},
 		Language:     "sv",
 		Vip:          false,
 	}

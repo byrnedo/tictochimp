@@ -1,9 +1,9 @@
-package models
+package tictail
 
 import (
 	"encoding/json"
 	"errors"
-	"github.com/byrnedo/tictochimp/models/tictailSpec"
+	"github.com/byrnedo/tictochimp/models/tictail/spec"
 	"github.com/byrnedo/tictochimp/utils"
 )
 
@@ -30,9 +30,9 @@ func NewTictail(accessToken string) *Tictail {
 	}
 }
 
-func (m *Tictail) GetMe() (*tictailSpec.MeResponse, error) {
+func (m *Tictail) GetMe() (*spec.MeResponse, error) {
 
-	responseData := tictailSpec.MeResponse{}
+	responseData := spec.MeResponse{}
 
 	err := m.client.Get(m.url + "/me")
 	if err != nil {
@@ -49,9 +49,9 @@ func (m *Tictail) GetMe() (*tictailSpec.MeResponse, error) {
 	return &responseData, err
 }
 
-func (m *Tictail) GetAllOrders(storeID string) ([]tictailSpec.OrdersResponse, error) {
+func (m *Tictail) GetAllOrders(storeID string) ([]spec.OrdersResponse, error) {
 
-	responseData := []tictailSpec.OrdersResponse{}
+	responseData := []spec.OrdersResponse{}
 
 	err := m.client.Get(m.url + "/store/" + storeID + "/orders")
 	if err != nil {

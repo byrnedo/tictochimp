@@ -1,4 +1,4 @@
-package models
+package tictail
 
 const (
 	TICTAIL_MOCK_GET_ME_200_RESPONSE = `{
