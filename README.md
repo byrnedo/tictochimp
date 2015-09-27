@@ -1,8 +1,20 @@
 # Tictochimp
 
-Adds the email address to a mailchimp list from an order for a specific product.
+Adds the email address from a Tictail purchase to a Mailchimp mailing list.
 
-For example, if you wished to deliver a mail campaign based on a purchase through tictail.
+For example, if you wished to deliver a mail campaign based on a purchase of specific product through Tictail.
+
+## To build
+
+You must have go installed.
+
+If you do then just build normally:
+
+    cd tictochimp/
+    go get
+    go build 
+
+There are only 2 external dependencies ( 1 for testing ) so should be quick. 
 
 ## Usage
 
