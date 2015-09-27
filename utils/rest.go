@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 type RestClient struct {
@@ -16,7 +17,8 @@ type RestClient struct {
 }
 
 func NewRestClient() *RestClient {
-	return &RestClient{&http.Client{}, nil, http.Response{}, nil}
+	timeout := time.Duration(5 * time.Second)
+	return &RestClient{&http.Client{Timeout: timeout}, nil, http.Response{}, nil}
 }
 
 func (c *RestClient) ResponseBody() []byte {

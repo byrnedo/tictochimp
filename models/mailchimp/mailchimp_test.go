@@ -48,12 +48,12 @@ func TestGetLists(t *testing.T) {
 
 }
 
-func TestGetListMembers(t *testing.T) {
+func TestGet10ListMembers(t *testing.T) {
 
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", MAILCHIMP_TEST_URL+"/3.0/lists/x1234/members",
+	httpmock.RegisterResponder("GET", MAILCHIMP_TEST_URL+"/3.0/lists/x1234/members?offset=0",
 		func(req *http.Request) (*http.Response, error) {
 			if req.Header.Get("Authorization") == "apiKey "+MAILCHIMP_TEST_KEY {
 				return httpmock.NewStringResponse(200, MAILCHIMP_MOCK_GET_LIST_MEMBERS_200_RESPONSE), nil
@@ -64,9 +64,13 @@ func TestGetListMembers(t *testing.T) {
 
 	mc := NewMailchimp(MAILCHIMP_TEST_KEY)
 
-	data, err := mc.GetListMembers("x1234")
+	data, total, err := mc.Get10ListMembers(0, "x1234")
 	if err != nil {
 		t.Error(err.Error())
+	}
+
+	if total != 1 {
+		t.Error("Incorrect total found")
 	}
 
 	expectedData := spec.MembersResponse{}

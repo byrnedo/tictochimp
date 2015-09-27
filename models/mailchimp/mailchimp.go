@@ -3,6 +3,7 @@ package mailchimp
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/byrnedo/tictochimp/models/mailchimp/spec"
 	"github.com/byrnedo/tictochimp/utils"
 	"strings"
@@ -56,22 +57,43 @@ func (m *Mailchimp) GetLists() ([]spec.List, error) {
 	return responseData.Lists, err
 }
 
-func (m *Mailchimp) GetListMembers(listID string) ([]spec.Member, error) {
+func (m *Mailchimp) Get10ListMembers(offset int, listID string) (data []spec.Member, total int, err error) {
 
 	responseData := spec.MembersResponse{}
-	err := m.client.Get(m.url + "/lists/" + listID + "/members")
+	err = m.client.Get(fmt.Sprintf("%s/lists/%s/members?offset=%d", m.url, listID, offset))
 	if err != nil {
-		return nil, errors.New("Failed to do GET request: " + err.Error())
+		return nil, 0, errors.New("Failed to do GET request: " + err.Error())
 	}
 
 	status := m.client.ResponseStatus()
 	if status != 200 && status != 201 {
-		return nil, errors.New("Got non-success status code: " + string(status))
+		return nil, 0, errors.New("Got non-success status code: " + string(status))
 	}
 
 	err = json.Unmarshal(m.client.ResponseBody(), &responseData)
+	return responseData.Members, responseData.TotalItems, err
+}
 
-	return responseData.Members, err
+func (m *Mailchimp) GetAllListMembers(listID string) (totalList []spec.Member, err error) {
+	totalList = make([]spec.Member, 0, 0)
+
+	offset := 0
+	keepGoing := true
+
+	for keepGoing {
+		batchResult, total, err := m.Get10ListMembers(offset, listID)
+		if err != nil {
+			return nil, errors.New("Failed to get batch of 10 subscribers from list: " + err.Error())
+		}
+		currentBatchSize := len(batchResult)
+		fmt.Printf("Got batch of %d subscribers\n", currentBatchSize)
+		offset = offset + currentBatchSize
+		if offset >= total {
+			keepGoing = false
+		}
+		totalList = append(totalList, batchResult...)
+	}
+	return totalList, nil
 }
 
 func newMemeberRequest(subscriber Subscriber) *spec.MemberRequest {

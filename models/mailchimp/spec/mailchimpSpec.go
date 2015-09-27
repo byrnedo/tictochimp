@@ -6,11 +6,13 @@ type List struct {
 }
 
 type ListsResponse struct {
-	Lists []List
+	Lists      []List
+	TotalItems int `json:"total_items"`
 }
 
 type MembersResponse struct {
-	Members []Member
+	Members    []Member
+	TotalItems int `json:"total_items"`
 }
 
 type MergeFields struct {

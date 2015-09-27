@@ -5,19 +5,31 @@ import (
 	"fmt"
 	"github.com/byrnedo/tictochimp/config"
 	"github.com/byrnedo/tictochimp/models/mailchimp"
+	mailchimpSpec "github.com/byrnedo/tictochimp/models/mailchimp/spec"
 	"github.com/byrnedo/tictochimp/models/tictail"
 	tictailSpec "github.com/byrnedo/tictochimp/models/tictail/spec"
 	"os"
+	"strings"
+	"text/tabwriter"
 )
 
 var (
 	configFile string
 	showUsage  bool
+	dryRun     bool
+	w          *tabwriter.Writer
 )
+
+func init() {
+	w = new(tabwriter.Writer)
+	// Format in tab-separated columns with a tab stop of 8.
+	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
+}
 
 func main() {
 
 	flag.StringVar(&configFile, "conf", "", "Configuration file path")
+	flag.BoolVar(&dryRun, "dry-run", false, "Only output changes, dont save to mailing list")
 	flag.BoolVar(&showUsage, "help", false, "Show usage information")
 	flag.Parse()
 
@@ -36,7 +48,7 @@ func main() {
 		fmt.Println("Error parsing config file:" + err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("Got config:" + cnf.GetUnderlyingData().Root.String())
+	//fmt.Println("Got config:" + cnf.GetUnderlyingData().Root.String())
 
 	startProgram(&cnf)
 
@@ -51,6 +63,14 @@ func startProgram(cnf *config.Config) {
 		os.Exit(1)
 	}
 	fmt.Println("List ID = " + listID)
+
+	listMembers, err := mc.GetAllListMembers(listID)
+	if err != nil {
+		fmt.Println("Failed to find list members:", err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Printf("Found %d members in list\n", len(listMembers))
 
 	tt := tictail.NewTictail(cnf.Tictail.AccessToken)
 
@@ -67,6 +87,31 @@ func startProgram(cnf *config.Config) {
 		os.Exit(0)
 	}
 	fmt.Println("Creating unique email list")
+
+	newSubscribers := createEmailList(orders)
+	//pretty.Println(newSubscribers)
+
+	filteredList := filterExistingSubscribers(mc, listMembers, newSubscribers)
+
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("#######################################")
+	fmt.Println("### Subscribers which will be added ###")
+	fmt.Println("#######################################")
+	fmt.Fprintln(w, "Email\tFirstName\tLastName\tAdded")
+	for _, newSub := range filteredList {
+		worked := "true"
+		if dryRun == false {
+			if err = mc.AddSubscriber(newSub, listID); err != nil {
+				worked = "false"
+				fmt.Println("Error adding subscriber: " + err.Error())
+			}
+		} else {
+			worked = "?"
+		}
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", newSub.Email, newSub.FirstName, newSub.LastName, worked)
+	}
+	w.Flush()
 
 }
 
@@ -120,4 +165,50 @@ func getOrdersForProduct(tt *tictail.Tictail, storeName string, productName stri
 	}
 
 	return ordersForProduct, nil
+}
+
+func createEmailList(orders []tictailSpec.OrdersResponse) (uniqueSubs map[string]mailchimp.Subscriber) {
+	uniqueSubs = make(map[string]mailchimp.Subscriber, 0)
+
+	for _, order := range orders {
+
+		nameParts := strings.SplitN(order.Customer.Name, " ", 2)
+		firstName := strings.Title(nameParts[0])
+		lastName := ""
+		if len(nameParts) > 1 {
+			lastName = strings.Title(nameParts[1])
+		}
+		uniqueSubs[order.Customer.Email] = mailchimp.Subscriber{
+			Email:     order.Customer.Email,
+			FirstName: firstName,
+			LastName:  lastName,
+		}
+
+	}
+	return
+}
+
+func filterExistingSubscribers(mc *mailchimp.Mailchimp, existingMembers []mailchimpSpec.Member, newSubscribers map[string]mailchimp.Subscriber) (filteredSubscribers []mailchimp.Subscriber) {
+	existingMembersMap := make(map[string]mailchimpSpec.Member)
+	fmt.Printf("\nCurrent Members in List: %d\n\n", len(existingMembers))
+	for _, member := range existingMembers {
+
+		fmt.Fprintf(w, "%s\t%s\t%s\n", member.EmailAddress, member.MergeFields.FirstName, member.MergeFields.LastName)
+		existingMembersMap[strings.ToLower(member.EmailAddress)] = member
+	}
+	w.Flush()
+
+	filteredSubscribers = make([]mailchimp.Subscriber, 0, 0)
+
+	fmt.Printf("\nOrder contacts which exist on list already: %d\n\n", len(newSubscribers))
+	for _, newSubscriber := range newSubscribers {
+		if _, exists := existingMembersMap[strings.ToLower(newSubscriber.Email)]; exists == true {
+			fmt.Fprintf(w, "%s\t%s\t%s\n", newSubscriber.Email, newSubscriber.FirstName, newSubscriber.LastName)
+			continue
+		}
+		filteredSubscribers = append(filteredSubscribers, newSubscriber)
+	}
+	w.Flush()
+	return
+
 }

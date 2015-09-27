@@ -242,5 +242,6 @@ const MAILCHIMP_MOCK_GET_LIST_MEMBERS_200_RESPONSE = `{
           "targetSchema": "https://us10.api.mailchimp.com/schema/3.0/Lists/Members/Notes/Collection.json"
         }
       ]
-    }
-]}`
+    }],
+	"total_items" : 1
+}`
