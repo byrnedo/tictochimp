@@ -45,7 +45,7 @@ func main() {
 	var cnf = config.Config{}
 	err := cnf.ParseFile(configFile)
 	if err != nil {
-		fmt.Println("Error parsing config file:" + err.Error())
+		fmt.Fprintln(os.Stderr, "Error parsing config file:"+err.Error())
 		os.Exit(1)
 	}
 	//fmt.Println("Got config:" + cnf.GetUnderlyingData().Root.String())
@@ -59,14 +59,14 @@ func startProgram(cnf *config.Config) {
 	mc := mailchimp.NewMailchimp(cnf.Mailchimp.AccessToken)
 	listID := getSpecifiedList(mc, cnf.Mailchimp.ListName)
 	if len(listID) == 0 {
-		fmt.Println("Failed to find list ID")
+		fmt.Fprintln(os.Stderr, "Failed to find list ID")
 		os.Exit(1)
 	}
 	fmt.Println("List ID = " + listID)
 
 	listMembers, err := mc.GetAllListMembers(listID)
 	if err != nil {
-		fmt.Println("Failed to find list members:", err.Error())
+		fmt.Fprintln(os.Stderr, "Failed to find list members:", err.Error())
 		os.Exit(1)
 	}
 
@@ -77,7 +77,7 @@ func startProgram(cnf *config.Config) {
 	orders, err := getOrdersForProduct(tt, cnf.Tictail.StoreName, cnf.Tictail.ProductName)
 
 	if err != nil {
-		fmt.Println("Failed to find orders:", err.Error())
+		fmt.Fprintln(os.Stderr, "Failed to find orders:", err.Error())
 		os.Exit(1)
 	}
 
@@ -95,16 +95,16 @@ func startProgram(cnf *config.Config) {
 
 	fmt.Println("")
 	fmt.Println("")
-	fmt.Println("#######################################")
-	fmt.Println("### Subscribers which will be added ###")
-	fmt.Println("#######################################")
+	fmt.Println("##########################################")
+	fmt.Printf("### Subscribers which will be added: %d ###\n", len(filteredList))
+	fmt.Println("##########################################")
 	fmt.Fprintln(w, "Email\tFirstName\tLastName\tAdded")
 	for _, newSub := range filteredList {
 		worked := "true"
 		if dryRun == false {
 			if err = mc.AddSubscriber(newSub, listID); err != nil {
 				worked = "false"
-				fmt.Println("Error adding subscriber: " + err.Error())
+				fmt.Fprintln(os.Stderr, "Error adding subscriber: "+err.Error())
 			}
 		} else {
 			worked = "?"
@@ -120,9 +120,9 @@ func getSpecifiedList(mc *mailchimp.Mailchimp, listName string) (id string) {
 	allLists, err := mc.GetLists()
 
 	if err != nil {
-		fmt.Println("Failed to get lists: " + err.Error())
+		fmt.Fprintln(os.Stderr, "Failed to get lists: "+err.Error())
 	} else if len(allLists) == 0 {
-		fmt.Println("Failed to find any lists")
+		fmt.Fprintln(os.Stderr, "Failed to find any lists")
 	}
 
 	for _, list := range allLists {

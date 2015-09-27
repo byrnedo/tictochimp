@@ -86,7 +86,6 @@ func (m *Mailchimp) GetAllListMembers(listID string) (totalList []spec.Member, e
 			return nil, errors.New("Failed to get batch of 10 subscribers from list: " + err.Error())
 		}
 		currentBatchSize := len(batchResult)
-		fmt.Printf("Got batch of %d subscribers\n", currentBatchSize)
 		offset = offset + currentBatchSize
 		if offset >= total {
 			keepGoing = false
