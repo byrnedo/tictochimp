@@ -111,7 +111,9 @@ func startProgram(cnf *config.Config) {
 		}
 		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", newSub.Email, newSub.FirstName, newSub.LastName, worked)
 	}
-	w.Flush()
+	if len(filteredList) > 0 {
+		w.Flush()
+	}
 
 }
 
@@ -143,7 +145,6 @@ func getOrdersForProduct(tt *tictail.Tictail, storeName string, productName stri
 	if me.Subdomain == storeName {
 		storeID = me.ID
 	}
-	fmt.Printf("%#v\n", me)
 	if len(storeID) == 0 {
 		return nil, fmt.Errorf("Failed to find store ID for %s", storeName)
 	}
