@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -35,8 +34,6 @@ func (c *RestClient) Get(url string) error {
 		return err
 	}
 
-	os.Stdout.WriteString("Making request to " + url + "\n")
-
 	for name, value := range c.Headers {
 		req.Header.Add(name, value)
 	}
@@ -64,8 +61,6 @@ func (c *RestClient) Post(url string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-
-	os.Stdout.WriteString("Making request to " + url + "\n")
 
 	for name, value := range c.Headers {
 		req.Header.Add(name, value)

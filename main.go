@@ -99,9 +99,9 @@ func startProgram(cnf *config.Config) {
 
 	fmt.Println("")
 	fmt.Println("")
-	fmt.Println("##########################################")
+	fmt.Println("###########################################")
 	fmt.Printf("### Subscribers which will be added: %d ###\n", len(filteredList))
-	fmt.Println("##########################################")
+	fmt.Println("###########################################")
 	fmt.Fprintln(w, "Email\tFirstName\tLastName\tAdded")
 	for _, newSub := range filteredList {
 		worked := "true"
