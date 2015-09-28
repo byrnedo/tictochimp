@@ -29,7 +29,10 @@ func TestGetLists(t *testing.T) {
 		},
 	)
 
-	mc := NewMailchimp(MAILCHIMP_TEST_KEY)
+	mc, err := NewMailchimp(MAILCHIMP_TEST_KEY)
+	if err != nil {
+		t.Error(err.Error())
+	}
 
 	data, err := mc.GetLists()
 	if err != nil {
@@ -62,7 +65,7 @@ func TestGet10ListMembers(t *testing.T) {
 		},
 	)
 
-	mc := NewMailchimp(MAILCHIMP_TEST_KEY)
+	mc, _ := NewMailchimp(MAILCHIMP_TEST_KEY)
 
 	data, total, err := mc.Get10ListMembers(0, "x1234")
 	if err != nil {
@@ -128,7 +131,7 @@ func TestAddSubscriberToList(t *testing.T) {
 			return httpmock.NewStringResponse(401, "{}"), nil
 		},
 	)
-	mc := NewMailchimp("WRONG-us10")
+	mc, _ := NewMailchimp("WRONG-us10")
 
 	sub := Subscriber{
 		"donal@test.com",
@@ -140,7 +143,7 @@ func TestAddSubscriberToList(t *testing.T) {
 		t.Error("Got no error adding subscriber with bad auth token")
 	}
 
-	mc = NewMailchimp(MAILCHIMP_TEST_KEY)
+	mc, _ = NewMailchimp(MAILCHIMP_TEST_KEY)
 
 	err = mc.AddSubscriber(sub, "x1234")
 	if err != nil {

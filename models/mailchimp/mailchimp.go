@@ -23,7 +23,7 @@ type Subscriber struct {
 	LastName  string
 }
 
-func NewMailchimp(apiKey string) *Mailchimp {
+func NewMailchimp(apiKey string) (*Mailchimp, error) {
 
 	client := utils.NewRestClient()
 
@@ -31,12 +31,16 @@ func NewMailchimp(apiKey string) *Mailchimp {
 		"Authorization": "apiKey " + apiKey,
 	}
 
-	dataCenter := strings.Split(apiKey, "-")[1]
+	keyParts := strings.Split(apiKey, "-")
+	if len(keyParts) != 2 {
+		return nil, errors.New("Access Token must end with '-<datacenter code>', eg. '-us10'")
+	}
+	dataCenter := keyParts[1]
 	return &Mailchimp{
 		"https://" + dataCenter + ".api.mailchimp.com/" + API_VERSION,
 		apiKey,
 		client,
-	}
+	}, nil
 }
 
 func (m *Mailchimp) GetLists() ([]spec.List, error) {

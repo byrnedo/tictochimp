@@ -56,18 +56,22 @@ func main() {
 
 func startProgram(cnf *config.Config) {
 
-	mc := mailchimp.NewMailchimp(cnf.Mailchimp.AccessToken)
+	mc, err := mailchimp.NewMailchimp(cnf.Mailchimp.AccessToken)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to make mailchimp client: "+err.Error())
+		os.Exit(2)
+	}
 	listID := getSpecifiedList(mc, cnf.Mailchimp.ListName)
 	if len(listID) == 0 {
 		fmt.Fprintln(os.Stderr, "Failed to find list ID")
-		os.Exit(1)
+		os.Exit(3)
 	}
 	fmt.Println("List ID = " + listID)
 
 	listMembers, err := mc.GetAllListMembers(listID)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to find list members:", err.Error())
-		os.Exit(1)
+		os.Exit(4)
 	}
 
 	fmt.Printf("Found %d members in list\n", len(listMembers))
@@ -78,7 +82,7 @@ func startProgram(cnf *config.Config) {
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to find orders:", err.Error())
-		os.Exit(1)
+		os.Exit(5)
 	}
 
 	fmt.Printf("Got %d orders for product %s\n", len(orders), cnf.Tictail.ProductName)
@@ -127,7 +131,9 @@ func getSpecifiedList(mc *mailchimp.Mailchimp, listName string) (id string) {
 		fmt.Fprintln(os.Stderr, "Failed to find any lists")
 	}
 
+	fmt.Println("Lists Found:")
 	for _, list := range allLists {
+		fmt.Println("\t" + list.Name)
 		if list.Name == listName {
 			id = list.Id
 		}
