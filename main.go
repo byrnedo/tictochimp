@@ -10,6 +10,7 @@ import (
 	tictailSpec "github.com/byrnedo/tictochimp/models/tictail/spec"
 	"os"
 	"strings"
+	"sync"
 	"text/tabwriter"
 )
 
@@ -55,47 +56,67 @@ func main() {
 }
 
 func startProgram(cnf *config.Config) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	existingMembers := make(chan []mailchimpSpec.Member, 1)
+	listID := make(chan string, 1)
+	newSubscribers := make(chan map[string]mailchimp.Subscriber, 1)
 
 	mc, err := mailchimp.NewMailchimp(cnf.Mailchimp.AccessToken)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to make mailchimp client: "+err.Error())
 		os.Exit(2)
 	}
-	listID := getSpecifiedList(mc, cnf.Mailchimp.ListName)
-	if len(listID) == 0 {
-		fmt.Fprintln(os.Stderr, "Failed to find list ID")
-		os.Exit(3)
-	}
-	fmt.Println("List ID = " + listID)
 
-	listMembers, err := mc.GetAllListMembers(listID)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to find list members:", err.Error())
-		os.Exit(4)
-	}
+	go func() {
+		defer wg.Done()
 
-	fmt.Printf("Found %d members in list\n", len(listMembers))
+		_listID := getSpecifiedList(mc, cnf.Mailchimp.ListName)
+		if len(_listID) == 0 {
+			fmt.Fprintln(os.Stderr, "Failed to find list ID")
+			os.Exit(3)
+		}
+		listID <- _listID
+		fmt.Println("List ID = " + _listID)
 
-	tt := tictail.NewTictail(cnf.Tictail.AccessToken)
+		listMembers, err := mc.GetAllListMembers(_listID)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Failed to find list members:", err.Error())
+			os.Exit(4)
+		}
+		fmt.Printf("Found %d members in list\n", len(listMembers))
+		existingMembers <- listMembers
 
-	orders, err := getOrdersForProduct(tt, cnf.Tictail.StoreName, cnf.Tictail.ProductName)
+	}()
 
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to find orders:", err.Error())
-		os.Exit(5)
-	}
+	go func() {
+		defer wg.Done()
 
-	fmt.Printf("Got %d orders for product %s\n", len(orders), cnf.Tictail.ProductName)
-	if len(orders) == 0 {
-		fmt.Println("Exitting..")
-		os.Exit(0)
-	}
+		tt := tictail.NewTictail(cnf.Tictail.AccessToken)
+
+		orders, err := getOrdersForProduct(tt, cnf.Tictail.StoreName, cnf.Tictail.ProductName)
+
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Failed to find orders:", err.Error())
+			os.Exit(5)
+		}
+
+		fmt.Printf("Got %d orders for product %s\n", len(orders), cnf.Tictail.ProductName)
+		if len(orders) == 0 {
+			fmt.Println("Exitting..")
+			os.Exit(0)
+		}
+		newSubscribers <- createEmailList(orders)
+	}()
+
+	wg.Wait()
+	close(existingMembers)
+	close(newSubscribers)
+	close(listID)
+
 	fmt.Println("Creating unique email list")
-
-	newSubscribers := createEmailList(orders)
-	//pretty.Println(newSubscribers)
-
-	filteredList := filterExistingSubscribers(mc, listMembers, newSubscribers)
+	filteredList := filterExistingSubscribers(mc, <-existingMembers, <-newSubscribers)
 
 	fmt.Println("")
 	fmt.Println("")
@@ -106,7 +127,7 @@ func startProgram(cnf *config.Config) {
 	for _, newSub := range filteredList {
 		worked := "true"
 		if dryRun == false {
-			if err = mc.AddSubscriber(newSub, listID); err != nil {
+			if err = mc.AddSubscriber(newSub, <-listID); err != nil {
 				worked = "false"
 				fmt.Fprintln(os.Stderr, "Error adding subscriber: "+err.Error())
 			}
@@ -118,6 +139,7 @@ func startProgram(cnf *config.Config) {
 	if len(filteredList) > 0 {
 		w.Flush()
 	}
+	//pretty.Println(newSubscribers)
 
 }
 
