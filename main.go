@@ -219,17 +219,23 @@ func createEmailList(orders []tictailSpec.OrdersResponse) (uniqueSubs map[string
 
 func filterExistingSubscribers(mc *mailchimp.Mailchimp, existingMembers []mailchimpSpec.Member, newSubscribers map[string]mailchimp.Subscriber) (filteredSubscribers []mailchimp.Subscriber) {
 	existingMembersMap := make(map[string]mailchimpSpec.Member)
-	fmt.Printf("\nCurrent Members in List: %d\n\n", len(existingMembers))
+	unacTabWriter := new(tabwriter.Writer)
+	unacTabWriter.Init(os.Stdout, 0, 8, 0, '\t', 0)
+	numUnaccounted := 0
 	for _, member := range existingMembers {
-
+		if _, exists := newSubscribers[strings.ToLower(member.EmailAddress)]; exists == false {
+			numUnaccounted++
+			fmt.Fprintf(unacTabWriter, "%s\t%s\t%s\n", member.EmailAddress, member.MergeFields.FirstName, member.MergeFields.LastName)
+		}
 		fmt.Fprintf(w, "%s\t%s\t%s\n", member.EmailAddress, member.MergeFields.FirstName, member.MergeFields.LastName)
 		existingMembersMap[strings.ToLower(member.EmailAddress)] = member
 	}
+	fmt.Printf("\nCurrent Members in List: %d\n\n", len(existingMembers))
 	w.Flush()
 
 	filteredSubscribers = make([]mailchimp.Subscriber, 0, 0)
 
-	fmt.Printf("\nOrder contacts which exist on list already: %d\n\n", len(newSubscribers))
+	fmt.Printf("\nMembers of list which came from tictail orders: %d\n\n", len(newSubscribers))
 	for _, newSubscriber := range newSubscribers {
 		if _, exists := existingMembersMap[strings.ToLower(newSubscriber.Email)]; exists == true {
 			fmt.Fprintf(w, "%s\t%s\t%s\n", newSubscriber.Email, newSubscriber.FirstName, newSubscriber.LastName)
@@ -238,6 +244,8 @@ func filterExistingSubscribers(mc *mailchimp.Mailchimp, existingMembers []mailch
 		filteredSubscribers = append(filteredSubscribers, newSubscriber)
 	}
 	w.Flush()
-	return
 
+	fmt.Printf("\nMembers added by other means: %d\n\n", numUnaccounted)
+	unacTabWriter.Flush()
+	return
 }
